@@ -67,6 +67,7 @@ public:
     _max_calorie = 0;
   }
 
+  // ランダムに1ビット削除する
   mbit random_remove(const mbit &s, std::mt19937 &mt) {
     std::uniform_int_distribution<> ud(0, popcnt_u128(s) - 1);
     mbit t = s;
@@ -77,6 +78,7 @@ public:
     return (s ^ (t & -t));
   }
 
+  // ランダムに1ビット追加する
   mbit random_add(const mbit &s, std::mt19937 &mt) {
     static const mbit mask = (mbit(1) << SIZE) - 1;
     mbit t = (~s) & mask;
