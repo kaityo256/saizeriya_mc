@@ -1,11 +1,19 @@
 #pragma once
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <fstream>
 #include <iostream>
 #include <random>
 #include <vector>
 #include <x86intrin.h>
+
+inline long long myclock() {
+  static const auto s = std::chrono::system_clock::now();
+  const auto e = std::chrono::system_clock::now();
+  const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(e - s).count();
+  return elapsed;
+}
 
 const int SIZE = 114;
 typedef unsigned __int128 mbit;
@@ -64,7 +72,10 @@ public:
     _price = 0;
     _calorie = 0;
     _data = mbit(0);
-    _max_calorie = 0;
+  }
+
+  double current_energy() {
+    return static_cast<double>(-_calorie);
   }
 
   // ランダムに1ビット削除する
@@ -95,17 +106,12 @@ public:
     mbit ns = random_add(_data, mt);
     int i = bitpos(ns ^ _data);
     int ncalorie = _calorie + vcalorie[i];
-    // 千円超えたらアウト
-    if (_price + vprice[i] > 1000) return;
+    // 指定の金額超えたらアウト
+    if (_price + vprice[i] > 10000) return;
     //そうでなければ無条件で更新
     _price += vprice[i];
     _calorie += vcalorie[i];
     _data = ns;
-    if (_max_calorie < _calorie) {
-      _max_calorie = _calorie;
-      _max_data = _data;
-      std::cout << _max_calorie << std::endl;
-    }
   }
 
   // ランダムに一品減らす
@@ -127,18 +133,21 @@ public:
   }
 
   void show() {
-    mbit v = _max_data;
+    mbit v = _data;
     int price = 0;
     int calorie = 0;
     while (v) {
       mbit vv = (v & -v);
       int i = bitpos(vv);
-      std::cout << vname[i] << ":" << vcalorie[i] << " kcal " << vprice[i] << "Yen" << std::endl;
+      std::cout << vname[i] << ":" << vcalorie[i] << " kcal " << vprice[i] << " Yen" << std::endl;
       price += vprice[i];
       calorie += vcalorie[i];
       v ^= vv;
     }
-    std::cout << "合計 " << calorie << " kcal " << price << " Yen" << std::endl;
+    std::cout << "---" << std::endl;
+    std::cout << "合計 " << calorie << " kcal " << price << " Yen"
+              << " " << myclock() << std::endl;
+    std::cout << std::endl;
   }
 };
 
